@@ -8,6 +8,7 @@ import team.projectpulse.student.converter.StudentToStudentDtoConverter;
 import team.projectpulse.student.dto.StudentDto;
 import team.projectpulse.user.MyUserPrincipal;
 import team.projectpulse.user.PeerEvaluationUser;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,8 @@ public class AuthService {
         this.instructorToInstructorDtoConverter = instructorToInstructorDtoConverter;
     }
 
+    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+            justification = "Reached only through the authenticated POST /users/login route (SecurityConfiguration), where the principal is the MyUserPrincipal built by the user details service, never null.")
     public Map<String, Object> createLoginInfo(Authentication authentication) {
         // Create user info.
         MyUserPrincipal principal = (MyUserPrincipal) authentication.getPrincipal();
@@ -36,7 +39,7 @@ public class AuthService {
 
         Map<String, Object> loginResultMap = new HashMap<>();
 
-        if (peerEvaluationUser.getRoles().equals("student")) {
+        if ("student".equals(peerEvaluationUser.getRoles())) {
             StudentDto studentDto = this.studentToStudentDtoConverter.convert((Student) peerEvaluationUser);
             // Create a JWT.
             String token = this.jwtProvider.createToken(authentication);
