@@ -7,4 +7,28 @@
 
      Unlike the baseline, this file may grow, but every entry is a reviewed decision. -->
 <FindBugsFilter>
+
+  <!-- EI_EXPOSE_REP / EI_EXPOSE_REP2 are not enforced on JPA entities. An entity's associations
+       (@ManyToOne, @OneToMany, ...) must hold the live object Hibernate manages: it tracks changes
+       and identity through that reference, and its collections are PersistentBag/PersistentSet
+       wrappers. A defensive copy in a getter or setter detaches the association from the
+       persistence context and silently loses updates. The rule stays on for everything else.
+       SpotBugs filters cannot match on @Entity, so the entities are listed by name: when you add
+       an entity, add its class name here. Keep this list equal to the classes annotated @Entity. -->
+  <Match>
+    <Class name="~team\.projectpulse\..*\.(Activity|Course|PeerEvaluation|Rating|Instructor|Comment|CommentThread|DocumentSection|DocumentSectionLock|RequirementDocument|ArtifactKeySequence|ArtifactLink|RequirementArtifact|UseCase|UseCaseExtension|UseCaseExtensionStep|UseCaseLock|UseCaseMainStep|Criterion|Rubric|Section|Student|Team|PeerEvaluationUser|ResetPasswordToken|UserInvitation)"/>
+    <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+  </Match>
+
+  <!-- EI_EXPOSE_REP2 is not enforced on Spring-managed beans. Constructor injection stores a
+       reference to a shared singleton collaborator (a repository, another service, a Clock); the
+       container owns it and sharing it is the design, so copying it is meaningless. Matched by the
+       naming convention in backend/CLAUDE.md (controllers, services, converters, config, security
+       handlers and authorization managers, scheduler, seed initializer). A DTO or value class never
+       ends in one of these suffixes, so the rule stays on for them. -->
+  <Match>
+    <Class name="~team\.projectpulse\..*(Controller|Service|Converter|Scheduler|Initializer|Configuration|Config|EntryPoint|Handler|AuthorizationManager|JwtProvider|Registry|AuditorAware|UserUtils|Advice)"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
 </FindBugsFilter>
